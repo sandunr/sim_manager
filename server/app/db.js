@@ -23,6 +23,18 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             if (err) console.log(err);
             createUser();
         });
+
+        db.run(`CREATE TABLE IF NOT EXISTS sims (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone VARCHAR(20) NULL DEFAULT '',
+            owner VARCHAR(512) NULL DEFAULT '',
+            email VARCHAR(512) NOT NULL UNIQUE,
+            createDate VARCHAR(255) NULL,
+            expireDate VARCHAR(255) NULL
+            )`,
+        (err) => {
+            if (err) console.log(err);
+        });
     }
 });
 
@@ -34,8 +46,8 @@ function createUser() {
       id: uuidv4(),
       firstName: 'Navi',
       lastName: 'Alaliya',
-      email: '',
-      password: bcrypt.hashSync('', salt),
+      email: 'navodya.alaliya93@gmail.com',
+      password: bcrypt.hashSync('Oreo@1006', salt),
       isAdmin: true
   };
   db.run(`INSERT OR IGNORE INTO users(id,firstName,lastName,email,password,isAdmin) VALUES(?,?,?,?,?,?)`,
