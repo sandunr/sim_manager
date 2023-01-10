@@ -144,11 +144,10 @@ app.post('/api/sims/csv', (req, res) => {
                 res.status(200).json({ error: err.message });
                 return;
             }
-            res.json({
-                success: true,
-                data: rows
-            });
         });   
+    });
+    res.json({
+        success: true
     });
 });
 
