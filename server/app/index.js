@@ -118,7 +118,7 @@ app.post('/api/sims', (req, res) => {
         return;
     }
     const params = [sim.meid, sim.project_name, sim.brand, sim.iccid, sim.added_features, sim.ban_to_activate_on, sim.length_of_activation, sim.mdn, sim.msid, sim.msl, sim.request_on, sim.expires_on, sim.comments, new Date().toString()];
-    connection.query('INSERT INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
+    connection.query('INSERT IGNORE INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
         if (err) {
             res.status(400).json({ error: err.message });
             return;
@@ -139,7 +139,7 @@ app.post('/api/sims/csv', (req, res) => {
 
     csvData.forEach(sim => {
         const params = [sim.meid, sim.project_name, sim.brand, sim.iccid, sim.added_features, sim.ban_to_activate_on, sim.length_of_activation, sim.mdn, sim.msid, sim.msl, sim.request_on, sim.expires_on, sim.comments, new Date().toString()];
-        connection.query('INSERT INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
+        connection.query('INSERT IGNORE INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
             if (err) {
                 res.status(200).json({ error: err.message });
                 return;
