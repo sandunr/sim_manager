@@ -113,16 +113,12 @@ app.get('/api/sims', (req, res) => {
 
 app.post('/api/sims', (req, res) => {
     const sim = req.body;
-    if (!sim.phone) {
-        res.status(200).json({ error: 'Phone number is required', success: false });
+    if (!sim.meid) {
+        res.status(200).json({ error: 'MEID is required', success: false });
         return;
     }
-    if (!sim.owner) {
-        res.status(200).json({ error: 'Owner name is required', success: false });
-        return;
-    }
-    const params = [sim.phone, sim.owner, sim.email, new Date().toString(), sim.expireDate];
-    connection.query('INSERT INTO sims (phone,owner,email,createDate,expireDate) VALUES(?,?,?,?,?)', params, (err, rows) => {
+    const params = [sim.meid, sim.project_name, sim.brand, sim.iccid, sim.added_features, sim.ban_to_activate_on, sim.length_of_activation, sim.mdn, sim.msid, sim.msl, sim.request_on, sim.expires_on, sim.comments, new Date().toString()];
+    connection.query('INSERT INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
         if (err) {
             res.status(400).json({ error: err.message });
             return;
@@ -134,32 +130,54 @@ app.post('/api/sims', (req, res) => {
     });
 });
 
+app.post('/api/sims/csv', (req, res) => {
+    const csvData = req.body;
+    if (!csvData) {
+        res.status(200).json({ error: 'Invalid upload data', success: false });
+        return;
+    }
+
+    csvData.forEach(sim => {
+        const params = [sim.meid, sim.project_name, sim.brand, sim.iccid, sim.added_features, sim.ban_to_activate_on, sim.length_of_activation, sim.mdn, sim.msid, sim.msl, sim.request_on, sim.expires_on, sim.comments, new Date().toString()];
+        connection.query('INSERT INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
+            if (err) {
+                res.status(200).json({ error: err.message });
+                return;
+            }
+            res.json({
+                success: true,
+                data: rows
+            });
+        });   
+    });
+});
+
 app.put('/api/sims/:simId', (req, res) => {
     if (!req.params || !req.params.simId) {
         res.status(400).json({ error: "Invalid sim" });
         return;
     }
-    const sim = {
-        owner: req.body?.owner,
-        phone: req.body?.phone,
-        email: req.body?.email,
-        expireDate: req.body?.expireDate
-    };
-    if (sim.expireDate) {
-        
+    const sim = req.body;
+    if (!sim) {
+        res.status(200).json({ error: "Invalid Sim" });
+        return;
     }
+    const params = [sim.meid, sim.project_name, sim.brand, sim.iccid, sim.added_features, sim.ban_to_activate_on, sim.length_of_activation, sim.mdn, sim.msid, sim.msl, sim.request_on, sim.expires_on, sim.comments, req.params.simId];
     connection.query(`UPDATE sims set 
-                phone = COALESCE(?,phone), 
-                email = COALESCE(?,email), 
-                owner = COALESCE(?,owner), 
-                expireDate = COALESCE(?,expireDate)  
-                WHERE id = ?`, [
-                    sim.phone,
-                    sim.email,
-                    sim.owner,
-                    sim.expireDate,
-                    req.params.simId
-                ], (err, result) => {
+                meid = COALESCE(?,meid),
+                project_name = COALESCE(?,project_name),
+                brand = COALESCE(?,brand),
+                iccid = COALESCE(?,iccid),
+                added_features = COALESCE(?,added_features),
+                ban_to_activate_on = COALESCE(?,ban_to_activate_on),
+                length_of_activation = COALESCE(?,length_of_activation),
+                mdn = COALESCE(?,mdn),
+                msid = COALESCE(?,msid),
+                msl = COALESCE(?,msl),
+                request_on = COALESCE(?,request_on),
+                expires_on = COALESCE(?,expires_on),
+                comments = COALESCE(?,comments) 
+                WHERE id = ?`, params, (err, result) => {
         if (err) {
             res.status(200).json({ error: err });
             return;
@@ -200,11 +218,19 @@ app.get('/api/sims/csv', (req, res) => {
         const csvWriter = createCsvWriter({
             path: path,
             header: [
-            { id: 'phone', title: 'Phone Number' },
-            { id: 'owner', title: 'Owner Name' },
-            { id: 'email', title: 'Email' },
-            { id: 'expireDate', title: 'Expire Date' },
-            { id: 'createDate', title: 'Create Date' }
+            { id: 'meid', title: 'MEID' },
+            { id: 'project_name', title: 'Project Name' },
+            { id: 'brand', title: 'Brand' },
+            { id: 'iccid', title: 'ICCID' },
+            { id: 'added_features', title: 'Added Features' },
+            { id: 'ban_to_activate_on', title: 'BAN to Activate On' },
+            { id: 'length_of_activation', title: 'Length of Activation' },
+            { id: 'mdn', title: 'MDN' },
+            { id: 'msid', title: 'MSID' },
+            { id: 'msl', title: 'MSL' },
+            { id: 'request_on', title: 'Request On' },
+            { id: 'expires_on', title: 'Expires On' },
+            { id: 'comments', title: 'Comments' }
         ]
         });
         try {

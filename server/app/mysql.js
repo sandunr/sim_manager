@@ -6,8 +6,8 @@ const connection = mysql.createConnection({
     // host: 'host.docker.internal',
     host: '127.0.0.1',
     user: 'root',
-    // password: 'Oreo@1006',
-    password: 'Kandy#2004',
+    password: 'Oreo@1006',
+    // password: 'Kandy#2004',
     database: 'simmanager',
     multipleStatements: true
 });
@@ -34,11 +34,20 @@ connection.connect(err => {
 
         connection.query(`CREATE TABLE IF NOT EXISTS sims (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            phone VARCHAR(20) NULL DEFAULT '',
-            owner VARCHAR(512) NULL DEFAULT '',
-            email VARCHAR(512) NOT NULL UNIQUE,
-            createDate VARCHAR(255) NULL,
-            expireDate VARCHAR(255) NULL
+            meid VARCHAR(256) NOT NULL UNIQUE,
+            project_name VARCHAR(512) NULL DEFAULT '',
+            brand VARCHAR(256) NULL DEFAULT '',
+            iccid VARCHAR(256) NULL DEFAULT '',
+            added_features VARCHAR(1024) NULL DEFAULT '',
+            ban_to_activate_on VARCHAR(512) NULL DEFAULT '',
+            length_of_activation VARCHAR(512) NULL DEFAULT '',
+            mdn VARCHAR(512) NULL DEFAULT '',
+            msid VARCHAR(512) NULL DEFAULT '',
+            msl VARCHAR(512) NULL DEFAULT '',
+            request_on VARCHAR(512) NULL DEFAULT '',
+            expires_on VARCHAR(128) NULL DEFAULT '',
+            comments VARCHAR(1024) NULL DEFAULT '',
+            create_date VARCHAR(256) NULL
             )`,
         (err) => {
             if (err) console.log(err);
