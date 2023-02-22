@@ -10,6 +10,12 @@ const bcrypt = require('bcrypt');
 const authenticationMiddleware = require('./middleware');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { sendSMS } = require('./sms');
+const dayjs = require('dayjs');
+var utc = require('dayjs/plugin/utc');
+var timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 var MySQLStore = require('express-mysql-session')(session);
 var sessionStore = new MySQLStore({}, connection);
@@ -99,10 +105,31 @@ app.set('view engine', 'ejs');
 app.all("*/*", authenticationMiddleware(), express.static(path.join(__dirname + "/public")));
 
 app.get('/api/sims', (req, res) => {
-    connection.query('SELECT * FROM sims', [], (err, rows) => {
+    connection.query('SELECT * FROM sims ORDER BY expires_on', [], (err, rows) => {
         if (err) {
             res.status(400).json({ "error": err.message });
             return;
+        }
+        if (rows && rows.length > 0) {
+            let now = dayjs().tz('America/Chicago');
+            rows = rows.map(row => {
+                try {
+                    if (row.expires_on) {
+                        let sim_expire_date = dayjs(row.expires_on);
+                        if (sim_expire_date.isValid()) {
+                            sim_expire_date.set('hour', 0).set('minute', 0).set('second', 0);
+                            if (sim_expire_date <= now) {
+                                row.days_left = -1;
+                            } else {
+                                row.days_left = sim_expire_date.diff(now, 'day');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    
+                }
+                 return row;
+            });
         }
         res.json({
             success: true,

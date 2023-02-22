@@ -3,11 +3,10 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 
 const connection = mysql.createConnection({
-    // host: 'host.docker.internal',
-    host: '127.0.0.1',
+    host: '',
+    // host: '127.0.0.1',
     user: 'root',
-    password: 'Oreo@1006',
-    // password: 'Kandy#2004',
+    password: '',
     database: 'simmanager',
     multipleStatements: true
 });

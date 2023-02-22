@@ -22,10 +22,33 @@ function App() {
     getSims();
   }, []);
 
+  function checkForExpiredSims(simList) {
+    if (simList.length > 0) {
+      let expired_sims = [];
+      simList.forEach(sim => {
+        if (sim.days_left === -1) {
+          expired_sims.push(sim.meid);
+        }
+      });
+      if (expired_sims.length > 0) {
+        new Notification(`Following Sims have expired ${expired_sims.join(',')}`);
+      }
+    }
+  }
+
   function getSims() {
     Axios.get('/api/sims').then(result => {
       if (result.data.success) {
         setSims(result.data.data);
+        if (Notification.permission != 'granted') {
+          Notification.requestPermission().then(response => {
+            if (response === 'granted') {
+              checkForExpiredSims(result.data.data);
+            }
+          });
+        } else {
+          checkForExpiredSims(result.data.data);
+        }
       }
     })
     .catch(err => {
@@ -213,6 +236,7 @@ function App() {
             <th className="">Request On</th>
             <th className="">Expires On</th>
             <th className="">Comments</th>
+            <th className="">Days Left</th>
             <th className="">Create Date</th>
             <th className=""></th>
           </tr>
@@ -234,6 +258,7 @@ function App() {
               <td className="">{sim.request_on}</td>
               <td className="">{sim.expires_on}</td>
               <td className="">{sim.comments}</td>
+              <td className="">{sim.days_left && (sim.days_left === -1 ? <span style={{ color: 'red' }}>Expired</span> : sim.days_left)}</td>
               <td className="">{sim.create_date && new Date(sim.create_date).toLocaleString() + ' PT'}</td>
               <td className="">
                 <div>
