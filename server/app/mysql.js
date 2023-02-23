@@ -3,10 +3,9 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 
 const connection = mysql.createConnection({
-    host: '',
-    // host: '127.0.0.1',
+    host: '127.0.0.1',
     user: 'root',
-    password: '',
+    password: 'Kandy#2004',
     database: 'simmanager',
     multipleStatements: true
 });
@@ -67,7 +66,7 @@ function createUser() {
         id: uuidv4(),
         firstName: 'Navi',
         lastName: 'Alaliya',
-        email: 'navodya.alaliya93@gmail.com',
+        email: 'n.alaliya@sea.samsung.com',
         password: bcrypt.hashSync('Oreo@1006', salt),
         isAdmin: true
     };

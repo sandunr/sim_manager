@@ -13,6 +13,7 @@ const { sendSMS } = require('./sms');
 const dayjs = require('dayjs');
 var utc = require('dayjs/plugin/utc');
 var timezone = require('dayjs/plugin/timezone');
+const { v4: uuidv4 } = require('uuid');
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -164,7 +165,7 @@ app.post('/api/sims/csv', (req, res) => {
         return;
     }
 
-    csvData.forEach(sim => {
+    csvData.forEach(sim => {console.log(sim)
         const params = [sim.meid, sim.project_name, sim.brand, sim.iccid, sim.added_features, sim.ban_to_activate_on, sim.length_of_activation, sim.mdn, sim.msid, sim.msl, sim.request_on, sim.expires_on, sim.comments, new Date().toString()];
         connection.query('INSERT IGNORE INTO sims (meid,project_name,brand,iccid,added_features,ban_to_activate_on,length_of_activation,mdn,msid,msl,request_on,expires_on,comments,create_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', params, (err, rows) => {
             if (err) {
@@ -283,6 +284,67 @@ app.get('/api/sims/csv', (req, res) => {
 app.get('/api/sendsms', (req, res) => {
     sendSMS();
     res.status(200).json();
+});
+
+app.post('/api/users', (req, res) => {
+    const user = req.body;
+    if (!user.email) {
+        res.status(200).json({ error: 'Email is required', success: false });
+        return;
+    }
+    const saltRounds = 10;
+    const salt = bcrypt.genSaltSync(saltRounds);
+    const params = [uuidv4(), user.firstName, user.lastName, user.email, bcrypt.hashSync(user.password, salt), user.isAdmin];
+    connection.query('INSERT IGNORE INTO users (id,firstName,lastName,email,password,isAdmin) VALUES(?,?,?,?,?,?)', params, (err, rows) => {
+        if (err) {
+            res.status(400).json({ error: err.message });
+            return;
+        }
+        res.json({
+            success: true,
+            data: rows
+        });
+    });
+});
+
+app.get('/api/users', (req, res) => {
+    connection.query('SELECT * FROM users ORDER BY email', [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            success: true,
+            data: rows
+        });
+    });
+});
+
+app.get('/api/users/me', (req, res) => {
+    connection.query('SELECT * FROM users WHERE email = ?', [ req.user.email ], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            success: true,
+            data: rows[0]
+        });
+    });
+});
+
+app.delete('/api/users/:userId', (req, res) => {
+    if (!req.params || !req.params.userId) {
+        res.status(200).json({ error: "Invalid user" });
+        return;
+    }
+    connection.query(`DELETE FROM users WHERE id = ?`, [ req.params.userId ], (err, result) => {
+        if (err) {
+            res.status(200).json({ error: err.code, success: false });
+            return;
+        }
+        res.json({ success: true });
+    });
 });
 
 module.exports = app;
